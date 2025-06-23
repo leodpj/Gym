@@ -1,6 +1,7 @@
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -20,17 +21,27 @@ public class LoginApp extends Application {
 
         Label cpfLabel = new Label("CPF:");
         TextField cpfInput = new TextField();
+        cpfInput.setPromptText("Somente números");
 
         Button loginButton = new Button("Login");
-        loginButton.setDefaultButton(true);          // Enter faz login
+        loginButton.setDefaultButton(true);  // Tecla Enter aciona o botão
+
         loginButton.setOnAction(e -> {
-            if (cpfInput.getText().trim().isEmpty()) {
+            String cpf = cpfInput.getText().trim();
+
+            if (!cpf.matches("\\d{11}")) {
+                showAlert("CPF inválido", "O CPF deve conter exatamente 11 dígitos numéricos.");
                 cpfInput.requestFocus();
                 return;
             }
-            // aqui você pode validar o CPF…
-            // se válido, abre a tela principal:
-            new GymApp().start(primaryStage);
+
+            // Se CPF válido, abre a tela principal (GymApp)
+            try {
+                new GymApp().start(primaryStage);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                showAlert("Erro", "Erro ao abrir a tela principal.");
+            }
         });
 
         GridPane.setConstraints(cpfLabel, 0, 0);
@@ -39,8 +50,17 @@ public class LoginApp extends Application {
 
         grid.getChildren().addAll(cpfLabel, cpfInput, loginButton);
 
-        primaryStage.setScene(new Scene(grid, 300, 150));
+        Scene scene = new Scene(grid, 300, 150);
+        primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {
