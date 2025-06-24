@@ -5,15 +5,10 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -27,10 +22,10 @@ public class GymApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("Academia");
+        primaryStage.setTitle("Sistema da Academia");
 
-        /* Top bar: logomarca + data/hora */
-        Label logo = new Label("LOGOMARCA DA ACADEMIA");
+        // Topo: logomarca e relógio
+        Label logo = new Label("🏋️ LOGOMARCA DA ACADEMIA");
         Label dateTimeLabel = new Label();
         updateDateTime(dateTimeLabel);
 
@@ -39,15 +34,7 @@ public class GymApp extends Application {
         topBar.setAlignment(Pos.CENTER_LEFT);
         HBox.setMargin(dateTimeLabel, new Insets(0, 0, 0, 20));
 
-        /* Tabs centrais */
-        TabPane tabPane = new TabPane(
-                new Tab("TREINO DO DIA"),
-                new Tab("AVISOS"),
-                new Tab("DICAS DE SAÚDE")
-        );
-        tabPane.getTabs().forEach(t -> t.setClosable(false));
-
-        /* Menu no topo */
+        // Menu superior
         MenuBar menuBar = new MenuBar();
         Menu menu = new Menu("MENU");
         menu.getItems().addAll(
@@ -58,14 +45,31 @@ public class GymApp extends Application {
         );
         menuBar.getMenus().add(menu);
 
+        // Abas
+        Tab treinoTab = new Tab("TREINO DO DIA", new Label("🏋️ Treino de hoje: Peito e tríceps"));
+        Tab avisosTab = new Tab("AVISOS", new Label("🔔 Nenhum aviso no momento."));
+        Tab dicasTab = new Tab("DICAS DE SAÚDE", new Label("💡 Beba pelo menos 2L de água por dia."));
+        Tab nutricionistaTab = new Tab("NUTRICIONISTA", new Label("📅 Consultas disponíveis toda quarta-feira."));
+        Tab lotacaoTab = new Tab("LOTAÇÃO", new Label("👥 Pessoas na academia agora: 32"));
+        Tab horarioTab = new Tab("HORÁRIOS", new Label("⏰ Segunda a Sábado: 06:00 - 22:00"));
+        Tab agendamentoTab = new Tab("AGENDAR AULAS", criarPainelAgendamento());
+
+        TabPane tabPane = new TabPane(
+                treinoTab, avisosTab, dicasTab,
+                nutricionistaTab, lotacaoTab, horarioTab, agendamentoTab
+        );
+        tabPane.getTabs().forEach(t -> t.setClosable(false));
+
+        // Layout principal
         BorderPane root = new BorderPane();
         root.setTop(new VBox(menuBar, topBar));
         root.setCenter(tabPane);
 
+        // Cena e exibição
         primaryStage.setScene(new Scene(root, 800, 600));
         primaryStage.show();
 
-        /* Relógio em Timeline (thread-safe) */
+        // Atualiza relógio com Timeline (thread-safe)
         Timeline clock = new Timeline(
                 new KeyFrame(Duration.ZERO, e -> updateDateTime(dateTimeLabel)),
                 new KeyFrame(Duration.seconds(1))
@@ -76,5 +80,40 @@ public class GymApp extends Application {
 
     private void updateDateTime(Label label) {
         label.setText(LocalDateTime.now().format(formatter));
+    }
+
+    private VBox criarPainelAgendamento() {
+        ComboBox<String> aulaCombo = new ComboBox<>();
+        aulaCombo.getItems().addAll("Spinning", "Yoga", "Funcional", "Pilates");
+
+        DatePicker dataPicker = new DatePicker();
+        Button reservarBtn = new Button("Reservar");
+        Label resultado = new Label();
+
+        reservarBtn.setOnAction(e -> {
+            String aula = aulaCombo.getValue();
+            String data = dataPicker.getValue() != null ? dataPicker.getValue().toString() : null;
+            if (aula != null && data != null) {
+                resultado.setText("✅ Aula '" + aula + "' reservada para " + data);
+            } else {
+                resultado.setText("❌ Selecione aula e data.");
+            }
+        });
+
+        VBox box = new VBox(10,
+                new Label("Selecione a aula:"),
+                aulaCombo,
+                new Label("Escolha a data:"),
+                dataPicker,
+                reservarBtn,
+                resultado
+        );
+        box.setPadding(new Insets(10));
+        box.setAlignment(Pos.TOP_LEFT);
+        return box;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }
